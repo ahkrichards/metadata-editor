@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -9,9 +10,13 @@ namespace Synthesia
 {
    public partial class MetadataEditor : Form, IGuiForm
    {
+      [Browsable(false)]
+      [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
       public GuiController c { get; set; }
 
       public IEnumerable<SongEntry> SelectedSongs => from s in SongList.SelectedItems.Cast<SongEntry>() select s;
+      [Browsable(false)]
+      [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
       public string WindowTitle { set { Text = value; } }
       public void DeselectAllSongs() { SongList.SelectedIndex = -1; }
 

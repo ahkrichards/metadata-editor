@@ -122,39 +122,59 @@ namespace Synthesia
 
       public void ClearSongControls()
       {
+         var primaryText = ThemeManager.GetPrimaryTextColor();
+         var mutedText = ThemeManager.GetMutedTextColor();
+
          UniqueIdBox.Text = "(No song selected)";
+         UniqueIdBox.ForeColor = mutedText;
          TitleBox.Clear();
+         TitleBox.ForeColor = primaryText;
          SubtitleBox.Clear();
+         SubtitleBox.ForeColor = primaryText;
 
          BackgroundBox.Clear();
+         BackgroundBox.ForeColor = primaryText;
 
          ComposerBox.Clear();
+         ComposerBox.ForeColor = primaryText;
          ArrangerBox.Clear();
+         ArrangerBox.ForeColor = primaryText;
          CopyrightBox.Clear();
+         CopyrightBox.ForeColor = primaryText;
          LicenseBox.Clear();
+         LicenseBox.ForeColor = primaryText;
          MadeFamousByBox.Clear();
+         MadeFamousByBox.ForeColor = primaryText;
 
          DifficultyBox.Value = 0;
+         DifficultyBox.ForeColor = primaryText;
          RatingBox.Value = 0;
+         RatingBox.ForeColor = primaryText;
 
          FingerHintBox.Clear();
+         FingerHintBox.ForeColor = primaryText;
          HandsBox.Clear();
+         HandsBox.ForeColor = primaryText;
+         PartsBox.ForeColor = primaryText;
 
          TagBox.Clear();
+         TagBox.ForeColor = primaryText;
          TagList.Items.Clear();
 
          BookmarkMeasureBox.Value = 1;
+         BookmarkMeasureBox.ForeColor = primaryText;
          BookmarkDescriptionBox.Clear();
+         BookmarkDescriptionBox.ForeColor = primaryText;
          BookmarkList.Items.Clear();
 
-         PropertiesGroup.Enabled = false;
+         SetPropertiesEnabled(false);
       }
 
       private void BindBox(TextBox box, PropertyInfo prop)
       {
          int values = (from e in SelectedSongs select prop.GetValue(e, null) as string).Distinct().Count();
 
-         box.ForeColor = values == 1 ? SystemColors.ControlText : SystemColors.GrayText;
+         box.ForeColor = values == 1 ? ThemeManager.GetPrimaryTextColor() : ThemeManager.GetMutedTextColor();
          box.Text = values == 1 ? prop.GetValue(SelectedSongs.First(), null) as string : "(Various)";
       }
 
@@ -162,13 +182,13 @@ namespace Synthesia
       {
          int values = (from e in SelectedSongs select prop.GetValue(e, null) as int?).Distinct().Count();
 
-         box.ForeColor = values == 1 ? SystemColors.ControlText : SystemColors.GrayText;
+         box.ForeColor = values == 1 ? ThemeManager.GetPrimaryTextColor() : ThemeManager.GetMutedTextColor();
          box.Value = values == 1 ? (prop.GetValue(SelectedSongs.First(), null) as int?) ?? 0 : 0;
       }
 
       public void BindSongControls()
       {
-         PropertiesGroup.Enabled = true;
+         SetPropertiesEnabled(true);
 
          BindBox(UniqueIdBox, typeof(SongEntry).GetProperty("UniqueId"));
          BindBox(TitleBox, typeof(SongEntry).GetProperty("Title"));
@@ -206,6 +226,41 @@ namespace Synthesia
 
          BookmarkList.Items.Clear();
          foreach (var b in bookmarkFrequency) if (b.Value == selectedCount) BookmarkList.Items.Add(new Bookmark(b.Key.Key, b.Key.Value));
+      }
+
+      private void SetPropertiesEnabled(bool enabled)
+      {
+         // Keep the group and labels enabled for legible text; disable inputs/actions only.
+         PropertiesGroup.Enabled = true;
+
+         // NOTE: Keep the labels readable while still disabling inputs when no song is selected. In WinForms, disabling
+         //       the GroupBox disables all child controls and forces them into a “disabled” color which is too dark for
+         //       readable contrast.
+         UniqueIdBox.Enabled = enabled;
+         TitleBox.Enabled = enabled;
+         SubtitleBox.Enabled = enabled;
+         BackgroundBox.Enabled = enabled;
+         BackgroundBrowse.Enabled = enabled;
+         ComposerBox.Enabled = enabled;
+         ArrangerBox.Enabled = enabled;
+         CopyrightBox.Enabled = enabled;
+         LicenseBox.Enabled = enabled;
+         MadeFamousByBox.Enabled = enabled;
+         DifficultyBox.Enabled = enabled;
+         RatingBox.Enabled = enabled;
+         FingerHintBox.Enabled = enabled;
+         PartsBox.Enabled = enabled;
+         HandsBox.Enabled = enabled;
+         TagBox.Enabled = enabled;
+         TagList.Enabled = enabled;
+         AddTag.Enabled = enabled && TagBox.Text.Length > 0 && !TagList.Items.Contains(TagBox.Text);
+         RemoveTag.Enabled = enabled && TagList.SelectedIndex != -1;
+         BookmarkMeasureBox.Enabled = enabled;
+         BookmarkDescriptionBox.Enabled = enabled;
+         BookmarkList.Enabled = enabled;
+         AddBookmark.Enabled = enabled;
+         RemoveBookmark.Enabled = enabled && BookmarkList.SelectedIndex != -1;
+         Md5Update.Enabled = enabled && SongList.SelectedItems.Count == 1;
       }
 
       private void AddTag_Click(object sender, EventArgs e)

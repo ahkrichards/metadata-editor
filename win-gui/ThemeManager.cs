@@ -42,6 +42,18 @@ namespace Synthesia
          return userMode;
       }
 
+      public static Color GetPrimaryTextColor()
+      {
+         ThemeMode mode = GetEffectiveThemeMode(GetUserThemeMode());
+         return mode == ThemeMode.Dark ? DarkText : SystemColors.ControlText;
+      }
+
+      public static Color GetMutedTextColor()
+      {
+         ThemeMode mode = GetEffectiveThemeMode(GetUserThemeMode());
+         return mode == ThemeMode.Dark ? DarkDisabledText : SystemColors.GrayText;
+      }
+
       public static bool IsSystemDarkMode()
       {
          try

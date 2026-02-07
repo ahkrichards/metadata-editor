@@ -18,7 +18,11 @@ namespace Synthesia
       private static readonly Color DarkBackground = Color.FromArgb(30, 30, 30);
       private static readonly Color DarkSurface = Color.FromArgb(45, 45, 45);
       private static readonly Color DarkBorder = Color.FromArgb(70, 70, 70);
+      private static readonly Color DarkHover = Color.FromArgb(60, 60, 60);
+      private static readonly Color DarkPressed = Color.FromArgb(80, 80, 80);
+      private static readonly Color DarkDisabledText = Color.FromArgb(140, 140, 140);
       private static readonly Color DarkText = Color.Gainsboro;
+      private static readonly Color DarkImageMargin = Color.FromArgb(38, 38, 38);
 
       public static ThemeMode GetUserThemeMode()
       {
@@ -104,12 +108,14 @@ namespace Synthesia
          {
             menuStrip.BackColor = DarkSurface;
             menuStrip.ForeColor = DarkText;
+            menuStrip.Renderer = new ToolStripProfessionalRenderer(new DarkColorTable());
             ApplyDarkThemeToToolStripItems(menuStrip.Items);
          }
          else if (control is ToolStrip toolStrip)
          {
             toolStrip.BackColor = DarkSurface;
             toolStrip.ForeColor = DarkText;
+            toolStrip.Renderer = new ToolStripProfessionalRenderer(new DarkColorTable());
             ApplyDarkThemeToToolStripItems(toolStrip.Items);
          }
          else if (control is TextBoxBase || control is ComboBox || control is ListBox)
@@ -167,12 +173,14 @@ namespace Synthesia
          {
             menuStrip.BackColor = SystemColors.Control;
             menuStrip.ForeColor = SystemColors.ControlText;
+            menuStrip.Renderer = null;
             ApplyLightThemeToToolStripItems(menuStrip.Items);
          }
          else if (control is ToolStrip toolStrip)
          {
             toolStrip.BackColor = SystemColors.Control;
             toolStrip.ForeColor = SystemColors.ControlText;
+            toolStrip.Renderer = null;
             ApplyLightThemeToToolStripItems(toolStrip.Items);
          }
          else if (control is TextBoxBase || control is ComboBox || control is ListBox)
@@ -217,11 +225,12 @@ namespace Synthesia
       {
          foreach (ToolStripItem item in items)
          {
-            item.ForeColor = DarkText;
+            item.ForeColor = item.Enabled ? DarkText : DarkDisabledText;
             if (item is ToolStripDropDownItem dropDownItem && dropDownItem.DropDown is ToolStripDropDownMenu menu)
             {
                menu.BackColor = DarkSurface;
                menu.ForeColor = DarkText;
+               menu.Renderer = new ToolStripProfessionalRenderer(new DarkColorTable());
                ApplyDarkThemeToToolStripItems(dropDownItem.DropDownItems);
             }
          }
@@ -236,9 +245,32 @@ namespace Synthesia
             {
                menu.BackColor = SystemColors.Control;
                menu.ForeColor = SystemColors.ControlText;
+               menu.Renderer = null;
                ApplyLightThemeToToolStripItems(dropDownItem.DropDownItems);
             }
          }
+      }
+
+      private sealed class DarkColorTable : ProfessionalColorTable
+      {
+         public override Color ToolStripBorder => DarkBorder;
+         public override Color MenuBorder => DarkBorder;
+         public override Color MenuItemBorder => DarkBorder;
+         public override Color MenuItemSelected => DarkHover;
+         public override Color MenuItemSelectedGradientBegin => DarkHover;
+         public override Color MenuItemSelectedGradientEnd => DarkHover;
+         public override Color MenuItemPressedGradientBegin => DarkPressed;
+         public override Color MenuItemPressedGradientMiddle => DarkPressed;
+         public override Color MenuItemPressedGradientEnd => DarkPressed;
+         public override Color ToolStripDropDownBackground => DarkBackground;
+         public override Color ImageMarginGradientBegin => DarkImageMargin;
+         public override Color ImageMarginGradientMiddle => DarkImageMargin;
+         public override Color ImageMarginGradientEnd => DarkImageMargin;
+         public override Color SeparatorDark => DarkBorder;
+         public override Color SeparatorLight => DarkBorder;
+         public override Color ToolStripGradientBegin => DarkSurface;
+         public override Color ToolStripGradientMiddle => DarkSurface;
+         public override Color ToolStripGradientEnd => DarkSurface;
       }
    }
 }

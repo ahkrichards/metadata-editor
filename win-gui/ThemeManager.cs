@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Win32;
 using Synthesia.Properties;
@@ -84,6 +85,10 @@ namespace Synthesia
          if (root == null) return;
 
          root.SuspendLayout();
+         if (root is Form form)
+         {
+            ApplyWindowChromeTheme(form, mode);
+         }
          if (mode == ThemeMode.Dark)
          {
             ApplyDarkTheme(root);
@@ -94,6 +99,43 @@ namespace Synthesia
          }
          root.ResumeLayout(true);
       }
+
+      private static void ApplyWindowChromeTheme(Form form, ThemeMode mode)
+      {
+         if (!IsWindows10OrGreater()) return;
+
+         try
+         {
+            int useDark = mode == ThemeMode.Dark ? 1 : 0;
+            // Prefer the newer attribute on newer Windows, fallback to the older one.
+            if (DwmSetWindowAttribute(form.Handle, DWMWA_USE_IMMERSIVE_DARK_MODE, ref useDark, sizeof(int)) != 0)
+            {
+               DwmSetWindowAttribute(form.Handle, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ref useDark, sizeof(int));
+            }
+         }
+         catch
+         {
+         }
+      }
+
+      private static bool IsWindows10OrGreater()
+      {
+         try
+         {
+            Version version = Environment.OSVersion.Version;
+            return version.Major >= 10;
+         }
+         catch
+         {
+            return false;
+         }
+      }
+
+      private const int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
+      private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+
+      [DllImport("dwmapi.dll")]
+      private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
       private static void ApplyDarkTheme(Control root)
       {

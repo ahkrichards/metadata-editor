@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.ComponentModel;
+using Microsoft.Win32;
 using System.Linq;
 using System.Reflection;
 using System.Windows.Forms;
@@ -10,6 +11,8 @@ namespace Synthesia
 {
    public partial class MetadataEditor : Form, IGuiForm
    {
+      private bool _handlingThemeChange;
+
       [Browsable(false)]
       [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
       public GuiController c { get; set; }
@@ -45,6 +48,9 @@ namespace Synthesia
       public MetadataEditor(string initialFile)
       {
          InitializeComponent();
+         ApplyThemeFromSettings();
+         SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
+         FormClosed += MetadataEditor_FormClosed;
 
          // NOTE: This c.set is actually superfluous.  The GuiController sets it for us.
          c = new GuiController(this, initialFile);
@@ -60,6 +66,11 @@ namespace Synthesia
          Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
       }
 
+      private void MetadataEditor_FormClosed(object sender, FormClosedEventArgs e)
+      {
+         SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+      }
+
       private void NewMenu_Click(object sender, EventArgs e) { c.CreateNew(); }
       private void OpenMenu_Click(object sender, EventArgs e) { c.Open(); }
       private void SaveMenu_Click(object sender, EventArgs e) { c.SaveChanges(); }
@@ -67,6 +78,21 @@ namespace Synthesia
       private void ImportMenu_Click(object sender, EventArgs e) { c.Import(); }
       private void AboutMenu_Click(object sender, EventArgs e) { new About().ShowDialog(); }
       private void ExitMenu_Click(object sender, EventArgs e) { Close(); }
+
+      private void ThemeSystemMenu_Click(object sender, EventArgs e)
+      {
+         SetThemeMode(ThemeMode.System);
+      }
+
+      private void ThemeLightMenu_Click(object sender, EventArgs e)
+      {
+         SetThemeMode(ThemeMode.Light);
+      }
+
+      private void ThemeDarkMenu_Click(object sender, EventArgs e)
+      {
+         SetThemeMode(ThemeMode.Dark);
+      }
 
       private void RemoveSong_Click(object sender, EventArgs e) { c.RemoveSelectedSongs(); }
       private void SongGrouping_Click(object sender, EventArgs e) { c.Grouping(); }
@@ -310,6 +336,44 @@ namespace Synthesia
       {
          var relative = c.BrowseBackground();
          if (relative != null) BackgroundBox.Text = relative;
+      }
+
+      private void ApplyThemeFromSettings()
+      {
+         ThemeManager.ApplyThemeFromSettings(this);
+         UpdateThemeMenuState();
+      }
+
+      private void UpdateThemeMenuState()
+      {
+         ThemeMode userMode = ThemeManager.GetUserThemeMode();
+         ThemeSystemMenu.Checked = userMode == ThemeMode.System;
+         ThemeLightMenu.Checked = userMode == ThemeMode.Light;
+         ThemeDarkMenu.Checked = userMode == ThemeMode.Dark;
+      }
+
+      private void SetThemeMode(ThemeMode mode)
+      {
+         if (_handlingThemeChange) return;
+
+         try
+         {
+            _handlingThemeChange = true;
+            ThemeManager.SetUserThemeMode(mode);
+            ApplyThemeFromSettings();
+         }
+         finally
+         {
+            _handlingThemeChange = false;
+         }
+      }
+
+      private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+      {
+         if (!IsHandleCreated) return;
+         if (ThemeManager.GetUserThemeMode() != ThemeMode.System) return;
+
+         BeginInvoke((Action)(() => ApplyThemeFromSettings()));
       }
    }
 }

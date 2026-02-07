@@ -40,6 +40,7 @@ namespace Synthesia
          MadeChanges = false;
          Metadata = metadata;
          InitializeComponent();
+         ThemeManager.ApplyThemeFromSettings(this);
 
          List<SongEntry> remainingSongs = Metadata.Songs.ToList();
          foreach (GroupEntry g in Metadata.Groups) PopulateGroup(null, g, remainingSongs);

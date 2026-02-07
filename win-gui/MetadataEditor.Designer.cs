@@ -65,6 +65,11 @@
 			this.ImportMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
 			this.ExitMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ViewMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ThemeMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ThemeSystemMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ThemeLightMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.ThemeDarkMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.HelpMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.AboutMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.Tip = new System.Windows.Forms.ToolTip(this.components);
@@ -362,6 +367,7 @@
 			// 
 			this.MainMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.FileMenu,
+            this.ViewMenu,
             this.HelpMenu});
 			this.MainMenu.Location = new System.Drawing.Point(0, 0);
 			this.MainMenu.Name = "MainMenu";
@@ -438,6 +444,45 @@
 			this.ExitMenu.Size = new System.Drawing.Size(227, 22);
 			this.ExitMenu.Text = "E&xit";
 			this.ExitMenu.Click += new System.EventHandler(this.ExitMenu_Click);
+			// 
+			// ViewMenu
+			// 
+			this.ViewMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ThemeMenu});
+			this.ViewMenu.Name = "ViewMenu";
+			this.ViewMenu.Size = new System.Drawing.Size(44, 20);
+			this.ViewMenu.Text = "&View";
+			// 
+			// ThemeMenu
+			// 
+			this.ThemeMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.ThemeSystemMenu,
+            this.ThemeLightMenu,
+            this.ThemeDarkMenu});
+			this.ThemeMenu.Name = "ThemeMenu";
+			this.ThemeMenu.Size = new System.Drawing.Size(113, 22);
+			this.ThemeMenu.Text = "&Theme";
+			// 
+			// ThemeSystemMenu
+			// 
+			this.ThemeSystemMenu.Name = "ThemeSystemMenu";
+			this.ThemeSystemMenu.Size = new System.Drawing.Size(170, 22);
+			this.ThemeSystemMenu.Text = "&Auto Detect System (Default)";
+			this.ThemeSystemMenu.Click += new System.EventHandler(this.ThemeSystemMenu_Click);
+			// 
+			// ThemeLightMenu
+			// 
+			this.ThemeLightMenu.Name = "ThemeLightMenu";
+			this.ThemeLightMenu.Size = new System.Drawing.Size(170, 22);
+			this.ThemeLightMenu.Text = "&Light";
+			this.ThemeLightMenu.Click += new System.EventHandler(this.ThemeLightMenu_Click);
+			// 
+			// ThemeDarkMenu
+			// 
+			this.ThemeDarkMenu.Name = "ThemeDarkMenu";
+			this.ThemeDarkMenu.Size = new System.Drawing.Size(170, 22);
+			this.ThemeDarkMenu.Text = "&Dark";
+			this.ThemeDarkMenu.Click += new System.EventHandler(this.ThemeDarkMenu_Click);
 			// 
 			// HelpMenu
 			// 
@@ -838,6 +883,11 @@
         private System.Windows.Forms.ToolStripMenuItem SaveAsMenu;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem ExitMenu;
+        private System.Windows.Forms.ToolStripMenuItem ViewMenu;
+        private System.Windows.Forms.ToolStripMenuItem ThemeMenu;
+        private System.Windows.Forms.ToolStripMenuItem ThemeSystemMenu;
+        private System.Windows.Forms.ToolStripMenuItem ThemeLightMenu;
+        private System.Windows.Forms.ToolStripMenuItem ThemeDarkMenu;
         private System.Windows.Forms.ToolStripMenuItem HelpMenu;
         private System.Windows.Forms.ToolStripMenuItem AboutMenu;
         private System.Windows.Forms.ToolTip Tip;

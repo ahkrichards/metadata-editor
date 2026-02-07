@@ -15,6 +15,7 @@ namespace Synthesia
       public ImportSelection()
       {
          InitializeComponent();
+         ThemeManager.ApplyThemeFromSettings(this);
       }
 
       private void CheckChanged(object sender, EventArgs e)

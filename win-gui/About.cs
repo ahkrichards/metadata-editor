@@ -8,6 +8,7 @@ namespace Synthesia
       public About()
       {
          InitializeComponent();
+         ThemeManager.ApplyThemeFromSettings(this);
          Text = $"About {AssemblyTitle}";
          labelProductName.Text = AssemblyProduct;
          labelCopyright.Text = AssemblyCopyright;

@@ -23,6 +23,7 @@ namespace Synthesia
       private static readonly Color DarkDisabledText = Color.FromArgb(140, 140, 140);
       private static readonly Color DarkText = Color.Gainsboro;
       private static readonly Color DarkImageMargin = Color.FromArgb(38, 38, 38);
+      private static readonly Color DarkInputBorder = Color.FromArgb(120, 120, 120);
 
       public static ThemeMode GetUserThemeMode()
       {
@@ -130,7 +131,19 @@ namespace Synthesia
             toolStrip.Renderer = new ToolStripProfessionalRenderer(new DarkColorTable());
             ApplyDarkThemeToToolStripItems(toolStrip.Items);
          }
-         else if (control is TextBoxBase || control is ComboBox || control is ListBox)
+         else if (control is TextBoxBase textBox)
+         {
+            control.BackColor = DarkBackground;
+            control.ForeColor = DarkText;
+            EnsureBorderWrapper(textBox, DarkInputBorder);
+         }
+         else if (control is ListBox listBox)
+         {
+            control.BackColor = DarkBackground;
+            control.ForeColor = DarkText;
+            EnsureBorderWrapper(listBox, DarkInputBorder);
+         }
+         else if (control is ComboBox)
          {
             control.BackColor = DarkBackground;
             control.ForeColor = DarkText;
@@ -147,10 +160,13 @@ namespace Synthesia
          }
          else if (control is Button button)
          {
+            button.UseVisualStyleBackColor = false;
             button.BackColor = DarkSurface;
-            button.ForeColor = DarkText;
+            button.ForeColor = button.Enabled ? DarkText : DarkDisabledText;
             button.FlatStyle = FlatStyle.Flat;
             button.FlatAppearance.BorderColor = DarkBorder;
+            button.FlatAppearance.MouseOverBackColor = DarkHover;
+            button.FlatAppearance.MouseDownBackColor = DarkPressed;
          }
          else if (control is Label || control is CheckBox || control is RadioButton)
          {
@@ -195,7 +211,19 @@ namespace Synthesia
             toolStrip.Renderer = null;
             ApplyLightThemeToToolStripItems(toolStrip.Items);
          }
-         else if (control is TextBoxBase || control is ComboBox || control is ListBox)
+         else if (control is TextBoxBase textBox)
+         {
+            control.BackColor = SystemColors.Window;
+            control.ForeColor = SystemColors.WindowText;
+            EnsureDefaultBorder(textBox);
+         }
+         else if (control is ListBox listBox)
+         {
+            control.BackColor = SystemColors.Window;
+            control.ForeColor = SystemColors.WindowText;
+            EnsureDefaultBorder(listBox);
+         }
+         else if (control is ComboBox)
          {
             control.BackColor = SystemColors.Window;
             control.ForeColor = SystemColors.WindowText;
@@ -283,6 +311,158 @@ namespace Synthesia
          public override Color ToolStripGradientBegin => DarkSurface;
          public override Color ToolStripGradientMiddle => DarkSurface;
          public override Color ToolStripGradientEnd => DarkSurface;
+      }
+
+      private sealed class BorderWrapState
+      {
+         public Control Control { get; }
+         public Control Parent { get; }
+         public int ChildIndex { get; }
+         public DockStyle Dock { get; }
+         public AnchorStyles Anchor { get; }
+         public Point Location { get; }
+         public Size Size { get; }
+         public Padding Margin { get; }
+         public BorderStyle BorderStyle { get; }
+
+         public BorderWrapState(Control control, Control parent)
+         {
+            Control = control;
+            Parent = parent;
+            ChildIndex = parent.Controls.GetChildIndex(control);
+            Dock = control.Dock;
+            Anchor = control.Anchor;
+            Location = control.Location;
+            Size = control.Size;
+            Margin = control.Margin;
+            if (control is TextBoxBase textBox)
+            {
+               BorderStyle = textBox.BorderStyle;
+            }
+            else if (control is ListBox listBox)
+            {
+               BorderStyle = listBox.BorderStyle;
+            }
+            else
+            {
+               BorderStyle = BorderStyle.Fixed3D;
+            }
+         }
+      }
+
+      private static void EnsureBorderWrapper(Control control, Color borderColor)
+      {
+         if (control.Parent is BorderPanel panel && panel.Tag is BorderWrapState)
+         {
+            panel.BorderColor = borderColor;
+            return;
+         }
+
+         if (control.Parent == null) return;
+
+         Control parent = control.Parent;
+         var state = new BorderWrapState(control, parent);
+         var wrapper = new BorderPanel
+         {
+            BackColor = DarkBackground,
+            BorderColor = borderColor,
+            Margin = control.Margin,
+            Tag = state,
+            TabStop = false
+         };
+
+         if (control.Dock != DockStyle.None)
+         {
+            wrapper.Dock = control.Dock;
+         }
+         else
+         {
+            wrapper.Anchor = control.Anchor;
+            wrapper.Location = control.Location;
+            wrapper.Size = control.Size;
+         }
+
+         parent.Controls.Add(wrapper);
+         parent.Controls.SetChildIndex(wrapper, state.ChildIndex);
+
+         if (control is TextBoxBase textBox)
+         {
+            textBox.BorderStyle = BorderStyle.None;
+         }
+         else if (control is ListBox listBox)
+         {
+            listBox.BorderStyle = BorderStyle.None;
+         }
+
+         control.Margin = Padding.Empty;
+         control.Dock = DockStyle.None;
+         wrapper.Controls.Add(control);
+         wrapper.LayoutChild();
+      }
+
+      private static void EnsureDefaultBorder(Control control)
+      {
+         if (control.Parent is BorderPanel panel && panel.Tag is BorderWrapState state)
+         {
+            Control parent = state.Parent;
+            if (parent == null) return;
+
+            panel.Controls.Remove(control);
+            parent.Controls.Add(control);
+            parent.Controls.SetChildIndex(control, state.ChildIndex);
+
+            control.Dock = state.Dock;
+            control.Anchor = state.Anchor;
+            control.Location = state.Location;
+            control.Size = state.Size;
+            control.Margin = state.Margin;
+            if (control is TextBoxBase textBox)
+            {
+               textBox.BorderStyle = state.BorderStyle;
+            }
+            else if (control is ListBox listBox)
+            {
+               listBox.BorderStyle = state.BorderStyle;
+            }
+
+            panel.Dispose();
+         }
+      }
+
+      private sealed class BorderPanel : Panel
+      {
+         [System.ComponentModel.Browsable(false)]
+         [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+         public Color BorderColor { get; set; } = DarkInputBorder;
+
+         public BorderPanel()
+         {
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+         }
+
+         protected override void OnPaint(PaintEventArgs e)
+         {
+            base.OnPaint(e);
+            using (var pen = new Pen(BorderColor))
+            {
+               var rect = new Rectangle(0, 0, Width - 1, Height - 1);
+               e.Graphics.DrawRectangle(pen, rect);
+            }
+         }
+
+         protected override void OnLayout(LayoutEventArgs levent)
+         {
+            base.OnLayout(levent);
+            LayoutChild();
+         }
+
+         public void LayoutChild()
+         {
+            if (Controls.Count == 0) return;
+            Control child = Controls[0];
+            child.Location = new Point(1, 1);
+            child.Size = new Size(Math.Max(0, Width - 2), Math.Max(0, Height - 2));
+         }
       }
    }
 }

@@ -12,6 +12,7 @@ namespace Synthesia
    public partial class MetadataEditor : Form, IGuiForm
    {
       private bool _handlingThemeChange;
+      private bool _propertiesEnabled;
 
       [Browsable(false)]
       [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -96,7 +97,10 @@ namespace Synthesia
 
       private void RemoveSong_Click(object sender, EventArgs e) { c.RemoveSelectedSongs(); }
       private void SongGrouping_Click(object sender, EventArgs e) { c.Grouping(); }
-      private void Md5Update_Click(object sender, EventArgs e) { c.RetargetUniqueId(); }
+      private void Md5Update_Click(object sender, EventArgs e)
+      {
+         c.RetargetUniqueId();
+      }
       private void AddSong_Click(object sender, EventArgs e)
       {
          if (OpenSongDialog.ShowDialog(this) != DialogResult.OK) return;
@@ -217,8 +221,6 @@ namespace Synthesia
          SortedDictionary<string, int> tagFrequency = new SortedDictionary<string, int>();
          Dictionary<KeyValuePair<int, string>, int> bookmarkFrequency = new Dictionary<KeyValuePair<int, string>, int>();
 
-         Md5Update.Enabled = selectedCount == 1;
-
          foreach (SongEntry e in SelectedSongs)
          {
             foreach (string tag in e.Tags) tagFrequency[tag] = tagFrequency.ContainsKey(tag) ? tagFrequency[tag] + 1 : 1;
@@ -234,6 +236,7 @@ namespace Synthesia
 
       private void SetPropertiesEnabled(bool enabled)
       {
+         _propertiesEnabled = enabled;
          // Keep the group and labels enabled for legible text; disable inputs/actions only.
          PropertiesGroup.Enabled = true;
 
@@ -265,6 +268,10 @@ namespace Synthesia
          AddBookmark.Enabled = enabled;
          RemoveBookmark.Enabled = enabled && BookmarkList.SelectedIndex != -1;
          Md5Update.Enabled = enabled && SongList.SelectedItems.Count == 1;
+
+         var mode = ThemeManager.GetEffectiveThemeMode(ThemeManager.GetUserThemeMode());
+         ThemeManager.ApplyTheme(BackgroundBrowse, mode);
+         ThemeManager.ApplyTheme(Md5Update, mode);
       }
 
       private void AddTag_Click(object sender, EventArgs e)
